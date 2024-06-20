@@ -4,6 +4,8 @@ Public Class CreateForm
     Private stopwatch As Stopwatch = New Stopwatch()
     Private isEditing As Boolean = False
     Private editingIndex As Integer = -1
+    Private WithEvents timer As New Timer()
+
     Public Property UpdatedSubmission As Submission
 
     Public Sub New(Optional index As Integer = -1)
@@ -27,6 +29,8 @@ Public Class CreateForm
         btnSubmit.Font = New Font("Arial", 10, FontStyle.Regular)
         btnSubmit.FlatStyle = FlatStyle.Standard
 
+        ' Set timer interval to 1 second (1000 milliseconds)
+        timer.Interval = 1000
 
         If index >= 0 Then
             isEditing = True
@@ -36,10 +40,10 @@ Public Class CreateForm
     End Sub
 
     Private Sub LoadSubmissionForEdit()
-        Dim submission = ViewForm.submissions(editingIndex)
+        Dim submission = ViewForm.Submissions(editingIndex)
         txtName.Text = submission.Name
         txtEmail.Text = submission.Email
-        txtPhone.Text = submission.phone
+        txtPhone.Text = submission.Phone
         txtGitHubLink.Text = submission.github_link
         lblStopwatchTime.Text = submission.stopwatch_time
     End Sub
@@ -47,9 +51,14 @@ Public Class CreateForm
     Private Sub btnToggleStopwatch_Click(sender As Object, e As EventArgs) Handles btnToggleStopwatch.Click
         If stopwatch.IsRunning Then
             stopwatch.Stop()
+            timer.Stop()
         Else
             stopwatch.Start()
+            timer.Start()
         End If
+    End Sub
+
+    Private Sub timer_Tick(sender As Object, e As EventArgs) Handles timer.Tick
         lblStopwatchTime.Text = stopwatch.Elapsed.ToString("hh\:mm\:ss")
     End Sub
 
