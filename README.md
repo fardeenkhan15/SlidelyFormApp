@@ -71,18 +71,18 @@ Ctrl + U to edit the current submission (in ViewForm).
 Server Interaction
 The application communicates with a server to store and retrieve submissions. Ensure your server is running and accessible at the configured URL (default: http://localhost:3000).
 
-API Endpoints
+# API Endpoints
 POST /submit: To submit a new form.
 GET /read?index=<index>: To read a specific submission.
 PUT /edit/<index>: To update a specific submission.
 DELETE /delete/<index>: To delete a specific submission.
 GET /search?email=<email>: To search for submissions by email.
-Troubleshooting
+
+# Troubleshooting
 No Submissions Found: Ensure the server is running and reachable. Check if the db.json file is correctly set up and not empty.
 Server Errors: Check the server logs for any errors and ensure all endpoints are working correctly.
 For further assistance, refer to the project repository or contact support.
 
-Thank you for using SlidelyFormApp! Enjoy managing your submissions effortlessly.
 
 
 
