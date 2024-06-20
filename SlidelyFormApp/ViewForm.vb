@@ -1,7 +1,6 @@
 ﻿Imports Newtonsoft.Json
 Imports System.Net.Http
 
-
 Public Class ViewForm
     Private currentIndex As Integer = 0
     Public Shared Submissions As List(Of Submission)
@@ -11,7 +10,6 @@ Public Class ViewForm
     Public Sub New()
         ' This call is required by the designer.
         InitializeComponent()
-
 
         txtSearchEmail.Location = New Point(20, Me.ClientSize.Height - 60)
         txtSearchEmail.Size = New Size(200, 20)
@@ -50,12 +48,10 @@ Public Class ViewForm
         btnDelete.Font = New Font("Arial", 10, FontStyle.Regular)
         btnDelete.FlatStyle = FlatStyle.Standard
 
-
         btnEdit.BackColor = Color.LightGreen
         btnEdit.ForeColor = Color.Black
         btnEdit.Font = New Font("Arial", 10, FontStyle.Regular)
         btnEdit.FlatStyle = FlatStyle.Standard
-
 
         btnNext.BackColor = Color.LightBlue
         btnNext.ForeColor = Color.Black
@@ -71,7 +67,11 @@ Public Class ViewForm
         DisplaySubmission()
     End Sub
 
-    Private Async Function LoadSubmissionsFromServer() As Task
+    Private Async Function LoadSubmissionsFromServer(Optional clearExisting As Boolean = True) As Task
+        If clearExisting Then
+            Submissions.Clear()
+        End If
+
         Using client As New HttpClient()
             Try
                 Dim index As Integer = 0
@@ -82,7 +82,7 @@ Public Class ViewForm
                         Dim response = Await client.GetStringAsync($"http://localhost:3000/read?index={index}")
                         Dim submission = JsonConvert.DeserializeObject(Of Submission)(response)
                         If submission IsNot Nothing Then
-                            submissions.Add(submission)
+                            Submissions.Add(submission)
                             index += 1
                         Else
                             moreSubmissions = False
@@ -92,7 +92,7 @@ Public Class ViewForm
                     End Try
                 End While
 
-                If submissions.Count = 0 Then
+                If Submissions.Count = 0 Then
                     MessageBox.Show("No submissions found.")
                 End If
             Catch ex As Exception
@@ -134,7 +134,6 @@ Public Class ViewForm
         End Try
     End Sub
 
-
     Private Sub btnPrevious_Click(sender As Object, e As EventArgs) Handles btnPrevious.Click
         If currentIndex > 0 Then
             currentIndex -= 1
@@ -143,7 +142,7 @@ Public Class ViewForm
     End Sub
 
     Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
-        If currentIndex < submissions.Count - 1 Then
+        If currentIndex < Submissions.Count - 1 Then
             currentIndex += 1
             DisplaySubmission()
         End If
@@ -159,6 +158,9 @@ Public Class ViewForm
             ' Update submission in the list
             Submissions(currentIndex) = editForm.UpdatedSubmission
 
+            ' Refresh submissions from the server
+            Await LoadSubmissionsFromServer(clearExisting:=False)
+
             ' Refresh UI
             DisplaySubmission()
         End If
@@ -167,9 +169,9 @@ Public Class ViewForm
     Private Sub DisplaySubmission()
         If Submissions.Count > 0 AndAlso currentIndex >= 0 AndAlso currentIndex < Submissions.Count Then
             Dim submission = Submissions(currentIndex)
-            txtName.Text = submission.name
-            txtEmail.Text = submission.email
-            txtPhone.Text = submission.phone
+            txtName.Text = submission.Name
+            txtEmail.Text = submission.Email
+            txtPhone.Text = submission.Phone
             txtGithubLink.Text = submission.github_link
             txtStopwatchTime.Text = submission.stopwatch_time
         Else
@@ -184,6 +186,7 @@ Public Class ViewForm
         txtGithubLink.Clear()
         txtStopwatchTime.Clear()
     End Sub
+
     Private Async Sub DeleteSubmissionFromServer(index As Integer)
         Try
             Using client As New HttpClient()
@@ -191,9 +194,9 @@ Public Class ViewForm
 
                 If response.IsSuccessStatusCode Then
                     MessageBox.Show("Submission deleted successfully!")
-                    submissions.RemoveAt(index)
-                    If currentIndex >= submissions.Count Then
-                        currentIndex = submissions.Count - 1
+                    Submissions.RemoveAt(index)
+                    If currentIndex >= Submissions.Count Then
+                        currentIndex = Submissions.Count - 1
                     End If
                     DisplaySubmission()
                 Else
@@ -204,7 +207,6 @@ Public Class ViewForm
             MessageBox.Show("Error deleting submission: " & ex.Message)
         End Try
     End Sub
-
 
     Private Sub ViewForm_KeyDown(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
         If e.Control AndAlso e.KeyCode = Keys.P Then
@@ -217,9 +219,8 @@ Public Class ViewForm
             btnEdit.PerformClick()
         End If
     End Sub
+
     Private Sub CreateForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.KeyPreview = True
     End Sub
 End Class
-
-
